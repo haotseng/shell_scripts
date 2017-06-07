@@ -25,9 +25,9 @@ TK_VER=8.6.6
 
 echo "Get Source code from internet, and extract them"
 cd $SRC_PATH
-#wget $PYTHON_TAR_GZ_SRC
-#wget $TCL_TAR_GZ_SRC
-#wget $TK_TAR_GZ_SRC
+wget $PYTHON_TAR_GZ_SRC
+wget $TCL_TAR_GZ_SRC
+wget $TK_TAR_GZ_SRC
 
 echo "Extract file from archive files..."
 cd $BUILD_PATH
@@ -60,6 +60,9 @@ PY_INST_PATH=${HOME}/bin/py${PYTHON_VER}
 TCLTK_INC_PATH=${TCLTK_INST_PATH}/include
 TCLTK_LIB_PATH=${TCLTK_INST_PATH}/lib
 TCLTK_OPT="--with-tcltk-includes='-I${TCLTK_INC_PATH}' --with-tcltk-libs='-L${TCLTK_LIB_PATH}'"
+#export LD_LIBRARY_PATH=${TCLTK_LIB_PATH}
+#export PATH=${TCLTK_INST_PATH}/bin:$PATH
+export CPPFLAGS=-I${TCLTK_INC_PATH}
 
 echo "Build Python..."
 cd ${BUILD_PATH}/Python-${PYTHON_VER}
@@ -68,6 +71,14 @@ make
 make install
 
 echo "Done"
+
+#
+# Remove working directory
+#
+cd $BUILD_PATH
+rm -rf *
+
+# exit
 cd $CURR_PATH
 
 
