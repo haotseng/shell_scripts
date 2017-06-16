@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# This script can install Python from source with TclTk,OpenSSL support
+# This script can install Python from source with TclTk,OpenSSL,sqlite3 support
 #
 set -e
 
@@ -20,10 +20,16 @@ mkdir -p $BUILD_PATH
 #=======================
 OPENSSL_TAR_GZ_SRC=https://www.openssl.org/source/openssl-1.0.2l.tar.gz
 OPENSSL_VER=1.0.2l
+
+SQLITE3_TAR_GZ_SRC=http://www.sqlite.org/2017/sqlite-autoconf-3190300.tar.gz
+SQLITE3_VER=3190300
+
 PYTHON_TAR_GZ_SRC=https://www.python.org/ftp/python/3.6.1/Python-3.6.1.tgz
 PYTHON_VER=3.6.1
+
 TCL_TAR_GZ_SRC=https://prdownloads.sourceforge.net/tcl/tcl8.6.6-src.tar.gz
 TCL_VER=8.6.6
+
 TK_TAR_GZ_SRC=https://prdownloads.sourceforge.net/tcl/tk8.6.6-src.tar.gz
 TK_VER=8.6.6
 
@@ -33,6 +39,7 @@ wget $PYTHON_TAR_GZ_SRC
 wget $TCL_TAR_GZ_SRC
 wget $TK_TAR_GZ_SRC
 wget $OPENSSL_TAR_GZ_SRC
+wget $SQLITE3_TAR_GZ_SRC
 
 echo "Extract file from archive files..."
 cd $BUILD_PATH
@@ -40,14 +47,25 @@ tar -zxvf $SRC_PATH/Python*.tgz
 tar -zxvf $SRC_PATH/tcl*.tar.gz
 tar -zxvf $SRC_PATH/tk*.tar.gz
 tar -zxvf $SRC_PATH/openssl*.tar.gz
+tar -zxvf $SRC_PATH/sqlite*.tar.gz
 
 #=======================
-# Build OPEN SSL
+# Build OPEN_SSL
 #=======================
 OPENSSL_INST_PATH=${HOME}/bin/openssl
 echo "Build OPENSSL..."
 cd ${BUILD_PATH}/openssl-${OPENSSL_VER}
 ./config --prefix=${OPENSSL_INST_PATH}
+make
+make install
+
+#=======================
+# Build Sqlite3
+#=======================
+SQLITE3_INST_PATH=${HOME}/bin/sqlite3
+echo "Build Sqlite3..."
+cd ${BUILD_PATH}/sqlite-autoconf-${SQLITE3_VER}
+./configure --prefix=${SQLITE3_INST_PATH}
 make
 make install
 
@@ -92,6 +110,25 @@ _ssl _ssl.c \\
        -DUSE_SSL -I\$(SSL)/include -I\$(SSL)/include/openssl \\
        -L\$(SSL)/lib -lssl -lcrypto
 EOF
+
+
+#
+# Modified setup.py to add sqlite3 search path
+#
+LD_LIBRARY_PATH=${SQLITE3_INST_PATH}/lib:$LD_LIBRARY_PATH
+
+new_path=$(echo ${SQLITE3_INST_PATH}/include | sed 's/\//\\\//g')
+#echo $NEW_PATH
+
+search_pattern="s/\(sqlite_inc_paths.*\[.\)\('.*'\)/\1'${new_path}',\2/g"
+#echo ${search_pattern}
+
+cmd="sed \"${search_pattern}\" setup.py > setup.py.new"
+#echo $cmd
+
+cp setup.py setup.py.old
+eval $cmd
+cp setup.py.new setup.py
 
 #
 # Build
