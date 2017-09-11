@@ -4,7 +4,8 @@
 # This script can install Python from source with TclTk,OpenSSL,sqlite3 support
 #
 # In my ARM board(OS: Debian(Jessie) , Armbian). Build tcltk from source seems 
-# can not be reconized in python. So, use apt-get to get the offcial package 
+# can not be reconized in python. It seems missed something or some packages that
+# need by tcl/tk source code. So, I use apt-get to get the offcial package 
 # instead of it.
 #
 
