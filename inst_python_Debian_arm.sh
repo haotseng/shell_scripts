@@ -111,7 +111,7 @@ make install
 #=======================
 # Build Python
 #=======================
-#PY_INST_PATH=${HOME}/bin/py${PYTHON_VER}
+PY_INST_PATH=${HOME}/bin/py${PYTHON_VER}
 #TCLTK_INC_PATH=${TCLTK_INST_PATH}/include
 #TCLTK_LIB_PATH=${TCLTK_INST_PATH}/lib
 TCLTK_INC_PATH=/usr/include
