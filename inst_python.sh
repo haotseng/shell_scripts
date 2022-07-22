@@ -21,17 +21,24 @@ mkdir -p $BUILD_PATH
 OPENSSL_TAR_GZ_SRC=https://www.openssl.org/source/openssl-1.0.2l.tar.gz
 OPENSSL_VER=1.0.2l
 
+LIBFFI_TAR_GZ_SRC=ftp://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
+LIBFFI_VER=3.2.1
+
 SQLITE3_TAR_GZ_SRC=http://www.sqlite.org/2017/sqlite-autoconf-3190300.tar.gz
 SQLITE3_VER=3190300
 
-PYTHON_TAR_GZ_SRC=https://www.python.org/ftp/python/3.6.1/Python-3.6.1.tgz
-PYTHON_VER=3.6.1
+#PYTHON_TAR_GZ_SRC=https://www.python.org/ftp/python/3.10.5/Python-3.10.5.tgz
+#PYTHON_VER=3.10.5
+PYTHON_TAR_GZ_SRC=https://www.python.org/ftp/python/3.8.10/Python-3.8.10.tgz
+PYTHON_VER=3.8.10
 
 TCL_TAR_GZ_SRC=https://prdownloads.sourceforge.net/tcl/tcl8.6.6-src.tar.gz
 TCL_VER=8.6.6
 
 TK_TAR_GZ_SRC=https://prdownloads.sourceforge.net/tcl/tk8.6.6-src.tar.gz
 TK_VER=8.6.6
+
+
 
 echo "Get Source code from internet, and extract them"
 cd $SRC_PATH
@@ -40,6 +47,7 @@ wget $TCL_TAR_GZ_SRC
 wget $TK_TAR_GZ_SRC
 wget $OPENSSL_TAR_GZ_SRC
 wget $SQLITE3_TAR_GZ_SRC
+wget $LIBFFI_TAR_GZ_SRC
 
 echo "Extract file from archive files..."
 cd $BUILD_PATH
@@ -48,6 +56,7 @@ tar -zxvf $SRC_PATH/tcl*.tar.gz
 tar -zxvf $SRC_PATH/tk*.tar.gz
 tar -zxvf $SRC_PATH/openssl*.tar.gz
 tar -zxvf $SRC_PATH/sqlite*.tar.gz
+tar -zxvf $SRC_PATH/libffi*.tar.gz
 
 #=======================
 # Build OPEN_SSL
@@ -58,6 +67,17 @@ cd ${BUILD_PATH}/openssl-${OPENSSL_VER}
 ./config --prefix=${OPENSSL_INST_PATH}
 make
 make install
+
+#=======================
+# Build LIBFFI
+#=======================
+LIBFFI_INST_PATH=${HOME}/bin/libffi
+echo "Build LIBFFI..."
+cd ${BUILD_PATH}/libffi-${LIBFFI_VER}
+./configure --prefix=${LIBFFI_INST_PATH} --disable-docs
+make
+make install
+
 
 #=======================
 # Build Sqlite3
@@ -115,7 +135,9 @@ EOF
 #
 # Modified setup.py to add sqlite3 search path
 #
-LD_LIBRARY_PATH=${SQLITE3_INST_PATH}/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=${SQLITE3_INST_PATH}/lib:${LIBFFI_INST_PATH}/lib64:$LD_LIBRARY_PATH
+LD_RUN_PATH=${LIBFFI_INST_PATH}/lib64:${LD_RUN_PATH}
+
 
 new_path=$(echo ${SQLITE3_INST_PATH}/include | sed 's/\//\\\//g')
 #echo $NEW_PATH
@@ -133,7 +155,7 @@ cp setup.py.new setup.py
 #
 # Build
 #
-./configure --prefix=${PY_INST_PATH} ${TCLTK_OPT}
+./configure --prefix=${PY_INST_PATH} ${TCLTK_OPT} LDFLAGS="-L${LIBFFI_INST_PATH}/lib64" CPPFLAGS="-I ${LIBFFI_INST_PATH}/include"
 make
 make install
 
